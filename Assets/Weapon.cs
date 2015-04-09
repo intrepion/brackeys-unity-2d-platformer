@@ -1,0 +1,49 @@
+﻿using UnityEngine;
+using System.Collections;
+
+public class Weapon : MonoBehaviour
+{
+	public float fireRate = 0f;
+	public float Damage = 10f;
+	public LayerMask whatToHit;
+
+	private float timeToFire = 0;
+	private Transform firePoint;
+
+	// Use this for initialization
+	void Awake ()
+	{
+		this.firePoint = transform.FindChild ("Fire Point");
+		if (this.firePoint == null) {
+			Debug.LogError ("No Fire Point?  WHAT?!");
+		}
+	}
+	
+	// Update is called once per frame
+	void Update ()
+	{
+		if (this.fireRate == 0) {
+			if (Input.GetButtonDown ("Fire1")) {
+				this.Shoot ();
+			}
+		} else {
+			if (Input.GetButton ("Fire1") && Time.time > this.timeToFire) {
+				this.timeToFire = Time.time + 1 / this.fireRate;
+				this.Shoot ();
+			}
+		}
+	}
+
+	void Shoot ()
+	{
+		Vector2 screenToWorldPoint = Camera.main.ScreenToWorldPoint (Input.mousePosition);
+		Vector2 mousePosition = new Vector2 (screenToWorldPoint.x, screenToWorldPoint.y);
+		Vector2 firePointPosition = new Vector2 (firePoint.position.x, firePoint.position.y);
+		RaycastHit2D hit = Physics2D.Raycast (firePointPosition, mousePosition - firePointPosition, 100, whatToHit);
+		Debug.DrawLine (firePointPosition, (mousePosition - firePointPosition) * 100, Color.cyan);
+		if (hit.collider != null) {
+			Debug.DrawLine (firePointPosition, hit.point, Color.red);
+			Debug.Log ("We hit " + hit.collider.name + " and did " + this.Damage + " damage.");
+		}
+	}
+}
